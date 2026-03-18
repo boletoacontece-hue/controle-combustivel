@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Combustível · Acontece Imobiliária</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g9:#0d3d1f;--g7:#1a6b3a;--g5:#2d9d5a;--g3:#6fca94;
+  --g1:#e6f5ed;--g0:#f2faf5;
+  --ink:#111c16;--ink2:#3a4d40;--ink3:#6b7d72;
+  --border:#d4e6db;--surface:#fff;--bg:#f0f5f1;
+  --amber:#f59e0b;--amberbg:#fffbeb;--red:#dc2626;
+  --r:8px;--rlg:14px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shmd:0 4px 20px rgba(13,61,31,.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--g9);color:#fff;
+  padding:0 32px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 14px rgba(0,0,0,.3)
+}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{width:32px;height:32px;background:var(--g5);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tb-co{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;opacity:.6;font-family:'JetBrains Mono',monospace}
+.tb-title{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.gps-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-family:'JetBrains Mono',monospace;font-size:11px}
+.gps-dot{width:7px;height:7px;border-radius:50%;background:#6b7d72;flex-shrink:0}
+.gps-dot.ok{background:#4ade80;animation:blink 2s infinite}
+.gps-dot.warn{background:var(--amber)}
+.gps-dot.err{background:var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ── PAGE WRAPPER ── */
+.page{max-width:1400px;margin:0 auto;padding:24px 28px 60px}
+
+/* ── STATS ROW ── */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:22px
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rlg);padding:16px 18px;
+  box-shadow:var(--sh);position:relative;overflow:hidden
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--g5)}
+.s-lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-family:'JetBrains Mono',monospace;margin-bottom:7px}
+.s-val{font-size:26px;font-weight:800;color:var(--g7);line-height:1;letter-spacing:-.5px}
+.s-sub{font-size:11px;color:var(--ink3);margin-top:5px;font-family:'JetBrains Mono',monospace}
+
+/* ── FORM CARD ── */
+.form-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rlg);box-shadow:var(--shmd);
+  overflow:hidden;margin-bottom:22px
+}
+.form-card-head{
+  background:var(--g7);color:#fff;
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.form-card-head h2{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.form-card-body{padding:20px 24px 24px}
+
+/* ── HORIZONTAL FORM SECTIONS ── */
+/* Each section is a labeled group with fields in a flex row */
+.form-sections{
+  display:flex;
+  flex-direction:column;
+  gap:0
+}
+.form-row{
+  display:flex;
+  gap:0;
+  border-bottom:1px solid var(--border)
+}
+.form-row:last-child{border-bottom:none}
+.form-section{
+  flex:1;
+  padding:16px 20px;
+  border-right:1px solid var(--border);
+  min-width:0
+}
+.form-section:last-child{border-right:none}
+.sec-lbl{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink3);font-family:'JetBrains Mono',monospace;
+  margin-bottom:12px;padding-bottom:7px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:5px
+}
+.fields-h{display:flex;gap:10px;flex-wrap:wrap}
+.fg{flex:1;min-width:120px;margin-bottom:0}
+.fg.wide{flex:2}
+.fg.narrow{flex:0 0 110px}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:4px;letter-spacing:.2px}
+
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=month],select{
+  width:100%;padding:8px 10px;
+  border:1.5px solid var(--border);border-radius:var(--r);
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--ink);background:var(--surface);
+  transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none
+}
+input:focus,select:focus{outline:none;border-color:var(--g5);box-shadow:0 0 0 3px rgba(45,157,90,.12)}
+input[readonly]{background:var(--g0);color:var(--g7);font-weight:700;cursor:default}
+
+.input-act{display:flex;gap:5px;align-items:stretch}
+.input-act input{flex:1}
+.icon-btn{
+  background:var(--g1);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:0 10px;cursor:pointer;font-size:15px;color:var(--g7);
+  transition:background .15s;display:flex;align-items:center;flex-shrink:0
+}
+.icon-btn:hover{background:var(--g3)}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* calc badge inline */
+.calc-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--g0);border:1px solid var(--g1);
+  border-radius:20px;padding:4px 10px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--g7);font-weight:700;margin-top:6px;
+  white-space:nowrap
+}
+
+/* GPS tabs */
+.tab-bar{display:flex;gap:3px;background:var(--g0);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:8px}
+.tab-btn{flex:1;padding:5px;border:none;border-radius:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--ink3);transition:all .15s}
+.tab-btn.active{background:var(--g7);color:#fff;box-shadow:var(--sh)}
+.gps-panel{display:none}
+.gps-panel.active{display:block}
+.route-prev{
+  background:var(--g0);border:1px dashed var(--border);border-radius:var(--r);
+  padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--g7);min-height:34px;margin-top:8px;line-height:1.7;white-space:pre-line
+}
+
+/* RECEIPT */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--r);
+  padding:14px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;
+  position:relative;background:var(--g0);
+  min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--g5);background:var(--g1)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;padding:0;border:none}
+.upload-zone input[type=file]:focus{box-shadow:none;border:none}
+.u-icon{font-size:22px;margin-bottom:4px}
+.u-txt{font-size:12px;font-weight:700;color:var(--g7)}
+.u-sub{font-size:10px;color:var(--ink3);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.receipt-prev{display:none;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--border);position:relative;margin-top:0}
+.receipt-prev img{width:100%;max-height:90px;object-fit:cover;display:block}
+.receipt-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);padding:5px 8px;background:var(--g0);border-top:1px solid var(--border)}
+.receipt-rm{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.receipt-rm:hover{background:var(--red)}
+.pdf-placeholder{background:var(--g1);padding:16px;text-align:center;font-size:24px}
+
+/* warn box */
+.warn-box{
+  background:var(--amberbg);border:1.5px solid #fcd34d;border-radius:var(--r);
+  padding:10px 14px;font-size:12px;color:#92400e;line-height:1.6;
+  display:none;margin-bottom:14px
+}
+.warn-box strong{color:#78350f}
+
+/* ACTIONS STRIP */
+.actions-strip{
+  background:var(--g0);border-top:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+.btn-primary{
+  background:var(--g7);color:#fff;border:none;border-radius:var(--r);
+  padding:11px 26px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;font-weight:800;cursor:pointer;
+  transition:background .15s,transform .1s;letter-spacing:.2px
+}
+.btn-primary:hover{background:var(--g5);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-sec{
+  background:var(--surface);color:var(--g7);
+  border:1.5px solid var(--border);border-radius:var(--r);
+  padding:9px 16px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:background .15s
+}
+.btn-sec:hover{background:var(--g1)}
+.spacer{flex:1}
+
+/* ── TABLE CARD ── */
+.tbl-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rlg);box-shadow:var(--sh);overflow:hidden
+}
+.tbl-head{
+  padding:14px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap
+}
+.tbl-head h3{font-size:14px;font-weight:800}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters input,.filters select{width:auto;font-size:12px;padding:6px 10px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{
+  background:var(--ink);color:#fff;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:10px 13px;text-align:left;white-space:nowrap;font-weight:500
+}
+tbody tr{border-bottom:1px solid #eef4f0;transition:background .1s}
+tbody tr:hover{background:var(--g0)}
+tbody td{
+  padding:9px 13px;color:var(--ink2);
+  font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;vertical-align:middle
+}
+.cg{color:var(--g7);font-weight:700}
+.ca{color:#b45309;font-weight:700}
+.cr{color:var(--red);font-weight:700}
+.btn-del{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;transition:background .1s}
+.btn-del:hover{background:#fee2e2}
+.r-thumb{width:30px;height:30px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:transform .15s}
+.r-thumb:hover{transform:scale(1.4)}
+.empty{text-align:center;padding:44px 20px;color:var(--ink3)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+
+/* LIGHTBOX */
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:999;align-items:center;justify-content:center;padding:20px}
+#lb.open{display:flex}
+#lb img{max-width:90vw;max-height:85vh;border-radius:var(--rlg);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#lb-x{position:fixed;top:14px;right:18px;color:#fff;font-size:28px;cursor:pointer;background:none;border:none;font-weight:700;line-height:1}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;box-shadow:var(--shmd);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:500;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@media print{.topbar,.form-card,.stats-row{display:none!important}.tbl-card{box-shadow:none;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">⛽</div>
+    <div>
+      <div class="tb-co">Acontece Assessoria e Planejamento Imobiliário</div>
+      <div class="tb-title">Controle de Combustível</div>
+    </div>
+  </div>
+  <div class="gps-pill">
+    <span class="gps-dot" id="gpsDot"></span>
+    <span id="gpsLabel">GPS aguardando</span>
+  </div>
+</header>
+
+<!-- LIGHTBOX -->
+<div id="lb" onclick="closeLb()">
+  <button id="lb-x" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" alt="Comprovante">
+</div>
+
+<div class="page">
+
+  <!-- ══ STATS ══ -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="s-lbl">Registros</div><div class="s-val" id="stTot">0</div><div class="s-sub">abastecimentos</div></div>
+    <div class="stat-card"><div class="s-lbl">Total KM</div><div class="s-val" id="stKm">0</div><div class="s-sub">km percorridos</div></div>
+    <div class="stat-card"><div class="s-lbl">Total Gasto</div><div class="s-val" id="stGasto">R$&nbsp;0,00</div><div class="s-sub">em combustível</div></div>
+    <div class="stat-card"><div class="s-lbl">Custo Médio</div><div class="s-val" id="stCusto">—</div><div class="s-sub">R$/km</div></div>
+  </div>
+
+  <!-- ══ FORM CARD ══ -->
+  <div class="form-card">
+    <div class="form-card-head">
+      <h2>➕ Novo Registro de Abastecimento</h2>
+    </div>
+    <div class="form-card-body">
+
+      <div id="warnBox" class="warn-box">
+        ⚠️ <strong>GPS automático bloqueado.</strong> Sem HTTPS (OneDrive/file://) o navegador bloqueia o GPS. Use a aba <strong>✏️ Manual</strong> na seção GPS — no celular, abra o Google Maps, segure o dedo no local e copie as coordenadas. Para GPS automático hospede no <strong>GitHub Pages</strong> (grátis e HTTPS).
+      </div>
+
+      <div class="form-sections">
+
+        <!-- ROW 1: Identificação + Trajeto + Abastecimento -->
+        <div class="form-row">
+
+          <!-- IDENTIFICAÇÃO -->
+          <div class="form-section" style="flex:1.2">
+            <div class="sec-lbl">👤 Identificação</div>
+            <div class="fields-h" style="flex-direction:column;gap:10px">
+              <div class="fg">
+                <label class="fl">Colaborador</label>
+                <input type="text" id="colaborador" placeholder="Nome completo" list="cl">
+                <datalist id="cl"></datalist>
+              </div>
+              <div class="fg">
+                <label class="fl">Veículo / Placa</label>
+                <input type="text" id="veiculo" placeholder="Ex: KWID 2021 – PBT 4685" list="vl">
+                <datalist id="vl"></datalist>
+              </div>
+            </div>
+          </div>
+
+          <!-- TRAJETO -->
+          <div class="form-section" style="flex:2.5">
+            <div class="sec-lbl">🛣 Trajeto</div>
+            <div class="fields-h" style="gap:10px">
+              <div class="fg narrow">
+                <label class="fl">Data</label>
+                <input type="date" id="data">
+              </div>
+              <div class="fg narrow">
+                <label class="fl">H. Saída</label>
+                <input type="time" id="horaSaida">
+              </div>
+              <div class="fg">
+                <label class="fl">Odômetro Saída (km)</label>
+                <input type="number" id="odoSaida" placeholder="144242" min="0" oninput="calcKm()">
+              </div>
+              <div class="fg narrow">
+                <label class="fl">H. Chegada</label>
+                <input type="time" id="horaChegada">
+              </div>
+              <div class="fg">
+                <label class="fl">Odômetro Chegada (km)</label>
+                <input type="number" id="odoChegada" placeholder="144384" min="0" oninput="calcKm()">
+              </div>
+            </div>
+            <div class="fields-h" style="gap:10px;margin-top:10px;align-items:flex-end">
+              <div class="fg wide">
+                <label class="fl">Trajeto / Atividade</label>
+                <input type="text" id="trajeto" placeholder="Ex: QND 43 – Rua 25N – CLNW 10/11 – Life Resort">
+              </div>
+              <div style="padding-bottom:0">
+                <span class="calc-badge" id="kmBadge" style="display:none">⚡ <span id="kmVal">—</span></span>
+                <span class="calc-badge" id="custoBadge" style="display:none;margin-left:6px">💰 <span id="custoVal">—</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABASTECIMENTO -->
+          <div class="form-section" style="flex:1">
+            <div class="sec-lbl">⛽ Abastecimento</div>
+            <div class="fields-h" style="flex-direction:column;gap:10px">
+              <div class="fg">
+                <label class="fl">Valor Total (R$)</label>
+                <input type="number" id="valor" placeholder="0,00" min="0" step="0.01" oninput="calcCusto()">
+              </div>
+              <div class="fg">
+                <label class="fl">Litros Abastecidos</label>
+                <input type="number" id="litros" placeholder="0,00" min="0" step="0.01">
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /form-row 1 -->
+
+        <!-- ROW 2: Comprovante + GPS -->
+        <div class="form-row">
+
+          <!-- COMPROVANTE -->
+          <div class="form-section" style="flex:1">
+            <div class="sec-lbl">📎 Comprovante</div>
+            <div class="upload-zone" id="dropZone"
+                 ondragover="event.preventDefault();this.classList.add('drag')"
+                 ondragleave="this.classList.remove('drag')"
+                 ondrop="handleDrop(event)">
+              <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(this.files[0])">
+              <div class="u-icon">📄</div>
+              <div class="u-txt">Clique ou arraste</div>
+              <div class="u-sub">JPG · PNG · PDF · máx. 5 MB</div>
+            </div>
+            <div class="receipt-prev" id="rPreview">
+              <img id="rImg" src="" alt="">
+              <div id="rPdf" class="pdf-placeholder" style="display:none">📄</div>
+              <div class="receipt-name" id="rName"></div>
+              <button class="receipt-rm" onclick="removeFile()">✕</button>
+            </div>
+          </div>
+
+          <!-- GPS -->
+          <div class="form-section" style="flex:2.5">
+            <div class="sec-lbl">📍 Localização GPS</div>
+            <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+              <div style="flex:0 0 200px">
+                <div class="tab-bar">
+                  <button class="tab-btn active" onclick="switchTab('auto',this)">📡 Automático</button>
+                  <button class="tab-btn" onclick="switchTab('manual',this)">✏️ Manual</button>
+                </div>
+                <!-- AUTO -->
+                <div id="tab-auto" class="gps-panel active">
+                  <div class="fg" style="margin-bottom:8px">
+                    <label class="fl">Saída</label>
+                    <div class="input-act">
+                      <input type="text" id="gAutoS" readonly placeholder="Aguardando...">
+                      <button class="icon-btn" id="btnS" onclick="captureGps('saida')" title="Capturar saída">📍</button>
+                    </div>
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Chegada</label>
+                    <div class="input-act">
+                      <input type="text" id="gAutoC" readonly placeholder="Aguardando...">
+                      <button class="icon-btn" id="btnC" onclick="captureGps('chegada')" title="Capturar chegada">📍</button>
+                    </div>
+                  </div>
+                </div>
+                <!-- MANUAL -->
+                <div id="tab-manual" class="gps-panel">
+                  <div class="fg" style="margin-bottom:8px">
+                    <label class="fl">Saída (lat, lng)</label>
+                    <input type="text" id="gManS" placeholder="-15.834, -47.921" oninput="parseManual('saida')">
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Chegada (lat, lng)</label>
+                    <input type="text" id="gManC" placeholder="-15.780, -47.930" oninput="parseManual('chegada')">
+                  </div>
+                </div>
+              </div>
+              <div style="flex:1;min-width:200px">
+                <label class="fl">Resultado</label>
+                <div class="route-prev" id="routePrev">Nenhuma localização registrada</div>
+                <p style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3);line-height:1.6;margin-top:6px">
+                  💡 Celular: Google Maps → segure o dedo no local → copie as coordenadas da barra inferior e cole no campo Manual.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /form-row 2 -->
+
+      </div><!-- /form-sections -->
+    </div><!-- /form-card-body -->
+
+    <!-- ACTIONS STRIP -->
+    <div class="actions-strip">
+      <button class="btn-primary" onclick="saveRecord()">✅ &nbsp;Salvar Registro</button>
+      <button class="btn-sec" onclick="clearForm()">🗑 Limpar</button>
+      <div class="spacer"></div>
+      <button class="btn-sec" onclick="exportCSV()">📊 Exportar CSV</button>
+      <button class="btn-sec" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+  </div><!-- /form-card -->
+
+  <!-- ══ TABLE CARD ══ -->
+  <div class="tbl-card">
+    <div class="tbl-head">
+      <h3>📋 Registros de Abastecimento</h3>
+      <div class="filters">
+        <input type="text" id="fColab" placeholder="🔍 Colaborador" oninput="render()" style="width:150px">
+        <input type="month" id="fMes" oninput="render()" title="Filtrar por mês" style="width:130px">
+        <input type="text" id="fVeic" placeholder="🔍 Veículo" oninput="render()" style="width:130px">
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Colaborador</th><th>Veículo</th>
+          <th>H. Saída</th><th>Odo. Saída</th><th>H. Chegada</th><th>Odo. Chegada</th>
+          <th>KM</th><th>R$ Abastec.</th><th>Litros</th><th>R$/km</th>
+          <th>Trajeto</th><th>GPS</th><th>Comp.</th><th></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div id="toast"></div>
+
+<script>
+let records = JSON.parse(localStorage.getItem('acont_fuel3') || '[]');
+let gps = { saida:null, chegada:null };
+let receiptUrl=null, receiptName=null;
+
+// ── INIT ──
+window.onload = () => {
+  const now = new Date();
+  document.getElementById('data').value = now.toISOString().split('T')[0];
+  document.getElementById('horaSaida').value =
+    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const secure = window.isSecureContext||location.protocol==='https:'||location.hostname==='localhost';
+  if (!secure) {
+    document.getElementById('warnBox').style.display='block';
+    ['btnS','btnC'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=true;});
+    setDot('warn','Sem HTTPS');
+  }
+  render(); updateStats(); updateLists();
+};
+
+// ── GPS ──
+function setDot(s,l){document.getElementById('gpsDot').className='gps-dot '+s;document.getElementById('gpsLabel').textContent=l;}
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.gps-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');
+}
+function captureGps(tipo){
+  const secure=window.isSecureContext||location.protocol==='https:'||location.hostname==='localhost';
+  if(!secure){document.getElementById('warnBox').style.display='block';switchTab('manual',document.querySelectorAll('.tab-btn')[1]);toast('⚠️ GPS bloqueado — use aba Manual');return;}
+  if(!navigator.geolocation){toast('❌ Geolocalização não suportada');return;}
+  const btn=document.getElementById(tipo==='saida'?'btnS':'btnC');
+  const inp=document.getElementById(tipo==='saida'?'gAutoS':'gAutoC');
+  btn.textContent='⏳';btn.disabled=true;setDot('','Obtendo...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6),acc=Math.round(pos.coords.accuracy);
+    gps[tipo]={lat,lng,acc};inp.value=`${lat}, ${lng}`;
+    btn.textContent='✅';btn.disabled=false;setDot('ok',`GPS ±${acc}m`);
+    updateRoute();toast(`📍 ${tipo==='saida'?'Saída':'Chegada'} capturada`);
+    setTimeout(()=>{btn.textContent='📍';},2500);
+  },err=>{
+    btn.textContent='❌';btn.disabled=false;setDot('err','GPS falhou');
+    setTimeout(()=>{btn.textContent='📍';},2000);
+    if(err.code===1){document.getElementById('warnBox').style.display='block';switchTab('manual',document.querySelectorAll('.tab-btn')[1]);toast('🔒 Permissão negada — use aba Manual');}
+    else toast('📡 GPS indisponível, tente novamente');
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+}
+function parseManual(tipo){
+  const val=document.getElementById(tipo==='saida'?'gManS':'gManC').value.trim();
+  const pts=val.replace(/\s+/g,' ').split(/[,\s]+/).map(Number).filter(v=>!isNaN(v));
+  if(pts.length>=2&&Math.abs(pts[0])<=90&&Math.abs(pts[1])<=180)
+    gps[tipo]={lat:pts[0].toFixed(6),lng:pts[1].toFixed(6),acc:'manual'};
+  else if(!val)gps[tipo]=null;
+  updateRoute();
+}
+function updateRoute(){
+  const el=document.getElementById('routePrev');const p=[];
+  if(gps.saida)p.push(`🟢 Saída: ${gps.saida.lat}, ${gps.saida.lng}${gps.saida.acc!=='manual'?' (±'+gps.saida.acc+'m)':' (manual)'}`);
+  if(gps.chegada)p.push(`🔴 Chegada: ${gps.chegada.lat}, ${gps.chegada.lng}${gps.chegada.acc!=='manual'?' (±'+gps.chegada.acc+'m)':' (manual)'}`);
+  if(gps.saida&&gps.chegada){const d=haversine(+gps.saida.lat,+gps.saida.lng,+gps.chegada.lat,+gps.chegada.lng);p.push(`📏 Linha reta: ~${d.toFixed(1)} km`);}
+  el.textContent=p.length?p.join('\n'):'Nenhuma localização registrada';
+}
+function haversine(a,b,c,d){const R=6371,r=Math.PI/180,dl=(c-a)*r,dn=(d-b)*r,x=Math.sin(dl/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dn/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+// ── RECEIPT ──
+function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)loadFile(f);}
+function loadFile(file){
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('❌ Arquivo maior que 5 MB');return;}
+  receiptName=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    receiptUrl=e.target.result;
+    const img=document.getElementById('rImg'),pdf=document.getElementById('rPdf');
+    if(file.type.startsWith('image/')){img.src=receiptUrl;img.style.display='block';pdf.style.display='none';}
+    else{img.style.display='none';pdf.style.display='block';}
+    document.getElementById('rName').textContent='📎 '+file.name;
+    document.getElementById('rPreview').style.display='block';
+    document.getElementById('dropZone').style.display='none';
+    toast('📎 Comprovante anexado!');
+  };reader.readAsDataURL(file);
+}
+function removeFile(){
+  receiptUrl=null;receiptName=null;
+  document.getElementById('rPreview').style.display='none';
+  document.getElementById('dropZone').style.display='block';
+  document.getElementById('fileInput').value='';
+  document.getElementById('rImg').src='';
+}
+
+// ── CALCS ──
+function calcKm(){
+  const s=parseFloat(document.getElementById('odoSaida').value)||0;
+  const c=parseFloat(document.getElementById('odoChegada').value)||0;
+  const km=c>s?c-s:0;
+  const badge=document.getElementById('kmBadge');
+  if(km>0){badge.style.display='inline-flex';document.getElementById('kmVal').textContent=km.toLocaleString('pt-BR')+' km';}
+  else badge.style.display='none';
+  calcCusto();
+}
+function calcCusto(){
+  const s=parseFloat(document.getElementById('odoSaida').value)||0;
+  const c=parseFloat(document.getElementById('odoChegada').value)||0;
+  const km=c>s?c-s:0;
+  const val=parseFloat(document.getElementById('valor').value)||0;
+  const badge=document.getElementById('custoBadge');
+  if(km>0&&val>0){badge.style.display='inline-flex';document.getElementById('custoVal').textContent='R$ '+(val/km).toFixed(3)+'/km';}
+  else badge.style.display='none';
+}
+
+// ── SAVE / DELETE ──
+function saveRecord(){
+  const colab=document.getElementById('colaborador').value.trim();
+  const dt=document.getElementById('data').value;
+  const odoS=document.getElementById('odoSaida').value;
+  if(!colab||!dt||!odoS){toast('⚠️ Preencha Colaborador, Data e Odômetro Saída');return;}
+  const s=parseFloat(odoS)||0,c=parseFloat(document.getElementById('odoChegada').value)||0;
+  const km=c>s?c-s:0,val=parseFloat(document.getElementById('valor').value)||0;
+  records.unshift({
+    id:Date.now(),colaborador:colab,
+    veiculo:document.getElementById('veiculo').value.trim(),
+    data:dt,horaSaida:document.getElementById('horaSaida').value,
+    odoSaida:s,horaChegada:document.getElementById('horaChegada').value,
+    odoChegada:c||null,km,valor:val,
+    litros:parseFloat(document.getElementById('litros').value)||0,
+    custoPorKm:km>0&&val>0?val/km:null,
+    trajeto:document.getElementById('trajeto').value.trim(),
+    gps:JSON.parse(JSON.stringify(gps)),
+    receipt:receiptUrl,receiptName
+  });
+  persist();render();updateStats();updateLists();clearForm();
+  toast('✅ Registro salvo com sucesso!');
+}
+function deleteRecord(id){
+  if(!confirm('Excluir este registro?'))return;
+  records=records.filter(r=>r.id!==id);persist();render();updateStats();toast('🗑 Registro excluído');
+}
+function clearForm(){
+  ['colaborador','veiculo','horaSaida','odoSaida','horaChegada','odoChegada',
+   'valor','litros','trajeto','gAutoS','gAutoC','gManS','gManC'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('kmBadge').style.display='none';
+  document.getElementById('custoBadge').style.display='none';
+  gps={saida:null,chegada:null};updateRoute();removeFile();
+  ['btnS','btnC'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='📍';b.disabled=false;}});
+  const secure=window.isSecureContext||location.protocol==='https:'||location.hostname==='localhost';
+  if(!secure){setDot('warn','Sem HTTPS');['btnS','btnC'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=true;});}
+  else setDot('','GPS aguardando');
+}
+
+// ── RENDER ──
+function render(){
+  const fc=document.getElementById('fColab').value.toLowerCase();
+  const fm=document.getElementById('fMes').value;
+  const fv=document.getElementById('fVeic').value.toLowerCase();
+  const list=records.filter(r=>{
+    if(fc&&!r.colaborador.toLowerCase().includes(fc))return false;
+    if(fm&&!r.data.startsWith(fm))return false;
+    if(fv&&!(r.veiculo||'').toLowerCase().includes(fv))return false;
+    return true;
+  });
+  const tbody=document.getElementById('tbody');
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="15"><div class="empty"><div class="empty-ico">⛽</div><div style="font-size:14px;font-weight:600">Nenhum registro encontrado</div><div style="font-size:12px;margin-top:4px;font-family:'JetBrains Mono',monospace">Adicione o primeiro registro no formulário acima</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=list.map(r=>{
+    const d=r.data?r.data.split('-').reverse().join('/'):'—';
+    const val=r.valor?'R$\u00a0'+r.valor.toFixed(2):'—';
+    const lit=r.litros?r.litros.toFixed(2)+'\u00a0L':'—';
+    const cst=r.custoPorKm?'R$\u00a0'+r.custoPorKm.toFixed(3):'—';
+    const hasg=r.gps&&(r.gps.saida||r.gps.chegada);
+    const gc=hasg&&r.gps.saida?`<a href="https://maps.google.com/?q=${r.gps.saida.lat},${r.gps.saida.lng}" target="_blank" style="text-decoration:none">🗺️</a>`:'—';
+    const rc=r.receipt?`<img class="r-thumb" src="${r.receipt}" onclick="openLb('${r.receipt}')" title="${r.receiptName||'Comprovante'}">`:'—';
+    return `<tr>
+      <td>${d}</td><td>${r.colaborador}</td><td>${r.veiculo||'—'}</td>
+      <td>${r.horaSaida||'—'}</td><td>${r.odoSaida||'—'}</td>
+      <td>${r.horaChegada||'—'}</td><td>${r.odoChegada||'—'}</td>
+      <td class="cg">${r.km||'—'}</td><td class="ca">${val}</td><td>${lit}</td><td class="cr">${cst}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${r.trajeto}">${r.trajeto||'—'}</td>
+      <td>${gc}</td><td>${rc}</td>
+      <td><button class="btn-del" onclick="deleteRecord(${r.id})" title="Excluir">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+function updateStats(){
+  const km=records.reduce((a,r)=>a+(r.km||0),0);
+  const val=records.reduce((a,r)=>a+(r.valor||0),0);
+  const cst=km>0&&val>0?val/km:null;
+  document.getElementById('stTot').textContent=records.length;
+  document.getElementById('stKm').textContent=km.toLocaleString('pt-BR');
+  document.getElementById('stGasto').textContent='R$\u00a0'+val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('stCusto').textContent=cst?'R$\u00a0'+cst.toFixed(3):'—';
+}
+function updateLists(){
+  document.getElementById('cl').innerHTML=[...new Set(records.map(r=>r.colaborador).filter(Boolean))].map(v=>`<option value="${v}">`).join('');
+  document.getElementById('vl').innerHTML=[...new Set(records.map(r=>r.veiculo).filter(Boolean))].map(v=>`<option value="${v}">`).join('');
+}
+
+// ── LIGHTBOX ──
+function openLb(src){document.getElementById('lb-img').src=src;document.getElementById('lb').classList.add('open');}
+function closeLb(){document.getElementById('lb').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();});
+
+// ── EXPORT ──
+function exportCSV(){
+  if(!records.length){toast('Nenhum registro para exportar');return;}
+  const h=['Data','Colaborador','Veículo','H.Saída','Odo.Saída','H.Chegada','Odo.Chegada','KM','Valor R$','Litros','R$/km','Trajeto','GPS Saída Lat','GPS Saída Lng','GPS Chegada Lat','GPS Chegada Lng','Comprovante'];
+  const rows=records.map(r=>[
+    r.data,r.colaborador,r.veiculo||'',r.horaSaida||'',r.odoSaida||'',
+    r.horaChegada||'',r.odoChegada||'',r.km||'',r.valor||'',r.litros||'',
+    r.custoPorKm?r.custoPorKm.toFixed(3):'',r.trajeto||'',
+    r.gps?.saida?.lat||'',r.gps?.saida?.lng||'',
+    r.gps?.chegada?.lat||'',r.gps?.chegada?.lng||'',
+    r.receiptName||''
+  ]);
+  const csv=[h,...rows].map(r=>r.map(c=>`"${c}"`).join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`combustivel_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();toast('📊 CSV exportado!');
+}
+function persist(){localStorage.setItem('acont_fuel3',JSON.stringify(records));}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+</body>
+</html>
