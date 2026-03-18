@@ -251,6 +251,60 @@ tbody td{
 #toast.show{transform:translateX(-50%) translateY(0)}
 
 @media print{.topbar,.form-card,.stats-row{display:none!important}.tbl-card{box-shadow:none;border:1px solid #ccc}}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .page{padding:12px 12px 60px}
+  .topbar{padding:0 14px;height:52px}
+  .tb-co{display:none}
+  .tb-title{font-size:13px}
+  .gps-pill{font-size:10px;padding:4px 9px}
+
+  /* stats: 2 colunas no mobile */
+  .stats-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .s-val{font-size:20px}
+
+  /* form: empilha tudo verticalmente */
+  .form-row{flex-direction:column}
+  .form-section{border-right:none!important;border-bottom:1px solid var(--border);padding:14px 14px}
+  .form-section:last-child{border-bottom:none}
+
+  /* campos lado a lado viram coluna única no mobile estreito */
+  .fields-h{flex-direction:column!important;gap:10px}
+  .fg.narrow{flex:unset}
+  .fg.wide{flex:unset}
+
+  /* trajeto: odômetros empilhados */
+  .form-section[style*="flex:2.5"] .fields-h{flex-direction:column!important}
+
+  /* GPS: empilha tabs e resultado */
+  .form-section > div[style*="display:flex"]{flex-direction:column!important;gap:12px}
+  div[style*="flex:0 0 200px"]{flex:unset!important;width:100%}
+
+  /* badges de km/custo */
+  .calc-badge{font-size:11px;padding:4px 9px}
+
+  /* ações */
+  .actions-strip{padding:12px 14px;gap:8px}
+  .btn-primary{padding:12px 18px;font-size:13px}
+  .btn-sec{padding:9px 10px;font-size:11px}
+
+  /* tabela: scroll horizontal */
+  .tbl-wrap{-webkit-overflow-scrolling:touch}
+  .tbl-head{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px}
+  .filters{width:100%}
+  .filters input{width:100%!important;margin-bottom:4px}
+
+  /* form card header */
+  .form-card-head{padding:12px 14px}
+  .form-card-head h2{font-size:13px}
+  .form-card-body{padding:0}
+
+  /* upload zone menor */
+  .upload-zone{min-height:70px;padding:12px}
+  .u-icon{font-size:20px}
+  .u-txt{font-size:12px}
+}
 </style>
 </head>
 <body>
